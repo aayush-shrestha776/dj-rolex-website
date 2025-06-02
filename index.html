@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>रोEX | Scroll + Tempo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #111;
+      color: white;
+    }
+
+    /* ==== NAVIGATION ==== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 2000;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 2px;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 30px;
+    }
+
+    .nav-links li a {
+      text-decoration: none;
+      color: #fbeec1;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+
+    .nav-links li a:hover {
+      color: white;
+    }
+
+    .social-icons a {
+      margin-left: 15px;
+    }
+
+    .social-icons img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+      transition: transform 0.2s ease;
+    }
+
+    .social-icons img:hover {
+      transform: scale(1.1);
+    }
+
+    /* ==== HERO ==== */
+    .hero {
+      height: 800px;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      text-align: center;
+      color: #fbeec1;
+    }
+
+    .video-wrapper {
+      padding-top: 70px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .video-blur-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 35%;
+      background: linear-gradient(to top, rgba(255,255,255,0.15), transparent);
+      backdrop-filter: blur(3px);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-title {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 100px;
+    }
+
+    .hero-bottom {
+      margin-bottom: 80px;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .hero-bottom p {
+      margin-bottom: 10px;
+      letter-spacing: 5px;
+    }
+
+    .explore-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      background: #fbeec1;
+      color: #111;
+      border-radius: 30px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .explore-btn:hover {
+      background: #fff;
+    }
+
+    /* ==== TEMPO SCROLL BAR ==== */
+    .slider-wrapper {
+      position: fixed;
+      top: 50%;
+      left: 30px;
+      transform: translateY(-50%);
+      height: 80vh;
+      width: 70px;
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+
+    .slider-wrapper.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .slider-track {
+      position: relative;
+      width: 24px;
+      height: 100%;
+      background: linear-gradient(to bottom, #1a1a1a, #0d0d0d);
+      border: 1px solid #333;
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px #000;
+    }
+
+    .slider-track::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: #000;
+    }
+
+    .slider-ticks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .tick::before,
+    .tick::after {
+      content: '';
+      position: absolute;
+      height: 1px;
+      width: 8px;
+      background: #444;
+      opacity: 0.3;
+    }
+
+    .tick::before { left: 0; }
+    .tick::after { right: 0; }
+
+    .slider-bump {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 12px;
+      background: linear-gradient(to bottom, #111, #555, #111);
+      border-radius: 4px;
+      box-shadow: inset 0 1px #666, 0 1px 3px rgba(255,255,255,0.2), 0 -1px 3px rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .slider-bump::after {
+      content: '';
+      width: 12px;
+      height: 2px;
+      background: white;
+      border-radius: 1px;
+    }
+
+    /* ==== CONTENT SECTIONS ==== */
+    .section {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(60px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    .section.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section img {
+      width: 80%;
+      max-width: 700px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .section p {
+      max-width: 600px;
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar">
+    <div class="logo">रोEX</div>
+    <ul class="nav-links">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">About Me</a></li>
+      <li><a href="#">Certification</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <div class="social-icons">
+      <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook" /></a>
+      <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram" /></a>
+      <a href="#"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="Twitter X" /></a>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="video-wrapper">
+      <video autoplay muted loop playsinline>
+        <source src="Desktop/dj rolex website/image/20250602_2106_DJ Night Vibes_simple_compose_01jwrkpv1mfzrbe6t8gyvgb81t.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="hero-content">
+      <div class="hero-title">
+        <h1>रोEX</h1>
+      </div>
+      <div class="hero-bottom">
+        <p>Lorem ipsum dolor sit.</p>
+        <a href="https://your-link-here.com" class="explore-btn" target="_blank">EXPLORE</a>
+      </div>
+    </div>
+    <div class="video-blur-bottom"></div>
+  </section>
+
+  <!-- TEMPO SCROLL BAR -->
+  <div class="slider-wrapper" id="slider">
+    <div class="slider-track">
+      <div class="slider-ticks" id="tickContainer"></div>
+      <div class="slider-bump" id="sliderBump"></div>
+    </div>
+  </div>
+
+  <!-- CONTENT SECTIONS -->
+  <section class="section" id="section1">
+    <img src="https://source.unsplash.com/800x400/?dj,concert" />
+    <p>Welcome to the beat. Every scroll brings a new drop.</p>
+  </section>
+
+  <section class="section">
+    <img src="https://source.unsplash.com/800x400/?party,music" />
+    <p>Step into the sound and feel the lights follow you.</p>
+  </section>
+
+  <section class="section">
+    <img src="https://source.unsplash.com/800x400/?stage,crowd" />
+    <p>Scroll deeper into the rhythm of the night.</p>
+  </section>
+
+  <!-- JS FUNCTIONALITY -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const bump = document.getElementById('sliderBump');
+      const track = document.querySelector('.slider-track');
+
+      const tickContainer = document.getElementById('tickContainer');
+      for (let i = 0; i < 50; i++) {
+        const tick = document.createElement('div');
+        tick.classList.add('tick');
+        tickContainer.appendChild(tick);
+      }
+
+      window.addEventListener('scroll', () => {
+        const heroHeight = document.querySelector('.hero').offsetHeight;
+        const scrollY = Math.max(window.scrollY - heroHeight, 0);
+        const remainingScroll = document.body.scrollHeight - window.innerHeight - heroHeight;
+        const scrollRatio = scrollY / remainingScroll;
+        const trackHeight = track.offsetHeight;
+        const bumpHeight = bump.offsetHeight || 12;
+
+        const maxTop = trackHeight - bumpHeight;
+        bump.style.top = `${Math.min(scrollRatio * trackHeight, maxTop)}px`;
+      });
+
+      // Animate sections on scroll
+      const sections = document.querySelectorAll('.section');
+      const sectionObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+          }
+        });
+      }, { threshold: 0.15 });
+      sections.forEach(section => sectionObserver.observe(section));
+
+      // Toggle tempo bar visibility
+      const slider = document.getElementById('slider');
+      const hero = document.querySelector('.hero');
+      const sliderVisibilityObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          slider.classList.toggle('visible', !entry.isIntersecting);
+        });
+      }, { threshold: 0.2 });
+      sliderVisibilityObserver.observe(hero);
+    });
+  </script>
+</body>
+</html>
